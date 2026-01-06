@@ -56,3 +56,12 @@ print(df[["title", "sentiment_score", "sentiment_label"]].head())
 output_path = r"C:\Users\Pragna Sree\Desktop\CA_youtube_trending_data_with_sentiment.csv"
 df.to_csv(output_path, index=False)
 print("Saved file with sentiment to:", output_path)
+
+#sample 1000 row dataset
+import pandas as pd
+
+df = pd.read_csv(r"C:\Users\Pragna Sree\Desktop\CA_youtube_trending_data_with_sentiment.csv")
+sample = df.sample(n=10000, random_state=42)  # or head(10000)
+sample.to_csv(r"C:\Users\Pragna Sree\Desktop\CA_trending_with_sentiment_sample.csv", index=False)
+
+
