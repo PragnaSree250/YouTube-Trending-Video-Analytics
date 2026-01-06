@@ -1,0 +1,58 @@
+import pandas as pd
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+import os
+
+
+nltk.download('vader_lexicon')
+
+# 1. Load CSV (full path to your original file)
+input_path = r"C:\Users\Pragna Sree\Desktop\CA_youtube_trending_data.csv"
+df = pd.read_csv(input_path)
+
+print("Shape:", df.shape)
+print(df.columns.tolist())
+
+# 2. Convert numeric columns
+numeric_cols = ["view_count", "likes", "dislikes", "comment_count"]
+for col in numeric_cols:
+    if col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+# 3. Optional: convert dates
+for dcol in ["publishedAt", "trending_date"]:
+    if dcol in df.columns:
+        df[dcol] = pd.to_datetime(df[dcol], errors="coerce")
+
+# 4. Handle missing text columns
+for col in ["title", "tags", "description"]:
+    if col in df.columns:
+        df[col] = df[col].fillna("")
+
+# 5. Build sentiment_score from title
+sid = SentimentIntensityAnalyzer()
+
+def compute_sentiment_score(text):
+    if pd.isna(text) or text == "":
+        return 0.0
+    scores = sid.polarity_scores(str(text))
+    return scores["compound"]
+
+df["sentiment_score"] = df["title"].apply(compute_sentiment_score)
+
+def label_sentiment(score, pos_thresh=0.1, neg_thresh=-0.1):
+    if score > pos_thresh:
+        return "Positive"
+    elif score < neg_thresh:
+        return "Negative"
+    else:
+        return "Neutral"
+
+df["sentiment_label"] = df["sentiment_score"].apply(label_sentiment)
+
+print(df[["title", "sentiment_score", "sentiment_label"]].head())
+
+# 6. Save cleaned + sentiment file to Desktop so you can see it
+output_path = r"C:\Users\Pragna Sree\Desktop\CA_youtube_trending_data_with_sentiment.csv"
+df.to_csv(output_path, index=False)
+print("Saved file with sentiment to:", output_path)
